@@ -8,4 +8,4 @@ Pillow==9.2.0
 tensorboardX==2.5.1
 timm==0.4.12
 torch==1.12.1
-torch_nightly==1.0.0.dev20181027
+#torch_nightly==1.0.0.dev20181027
