@@ -1,7 +1,7 @@
 einops==0.3.0
 matplotlib==2.2.4
 ml_collections==0.1.0
-monai==0.8.0
+monai[ignite]==0.8.0
 nibabel==3.1.1
 numpy==1.19.5
 Pillow==9.2.0
