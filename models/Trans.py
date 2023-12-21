@@ -13,7 +13,7 @@ import numpy as np
 import models.configs_Trans as configs
 #from monai.networks.blocks import UnetrUpBlock,UnetrUpOnlyBlock
 from monai.networks.blocks.dynunet_block import UnetOutBlock
-from monai.networks.blocks import UnetrBasicBlock, UnetrPrUpBlock, UnetrUpBlock,UnetrUpOnlyBlock
+from monai.networks.blocks import UnetrBasicBlock, UnetrPrUpBlock, UnetrUpBlock#,UnetrUpOnlyBlock
 import math
 import torch.nn.functional as F
 from einops import rearrange
