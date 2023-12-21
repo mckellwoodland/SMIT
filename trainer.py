@@ -527,3 +527,30 @@ def run_training(model,
 
     return val_acc_max
 
+def get_all_image_tokens(model_inferer,
+                         val_loader,
+                         args):
+    checkpoint_folder = "/".join(args.checkpoint.split('/')[:-1])
+    encodings_dir = os.path.join(checkpoint_folder, 't2_artifacts')
+    if not os.path.exists(encodings_dir):
+        os.mkdir(encodings_dir)
+    val_datalist = val_loader.dataset.data
+    if args.distributed:
+        torch.distributed.barrier()
+    with torch.no_grad():
+
+        for idx, batch_data in enumerate(tqdm(val_loader)):
+            filename = val_datalist[idx]['image'].split(os.sep)[-1][:-7]
+            print(filename)
+            if isinstance(batch_data, list):
+                data, _ = batch_data
+            else:
+                data = batch_data['image']
+            data = data.cuda(args.rank)
+            print(data.shape)
+            bottleneck = model_inferer(data, get_encodings=True)
+            print(bottleneck.shape)
+            torch.save(bottleneck.cpu(), os.path.join(encodings_dir, f'{filename}_bottleneck.pt'))
+            #torch.save(encoding, os.path.join(encodings_dir, f'{filename}_encoding.pt'))
+
+    return
