@@ -131,7 +131,7 @@ def main_worker(gpu, args):
         
         config = CONFIGS_TM['Trans-Small_Unetr'] # this one add the patch size from 4 to 2
         #model = Trans.Trans_3D_Seg(config)
-        model = Trans.Trans_Unetr(config)
+        model = Trans.Trans_Unetr(config, args.out_channels)
 
         calc_param = lambda net: sum(p.numel() for p in net.parameters() if p.requires_grad)
         
