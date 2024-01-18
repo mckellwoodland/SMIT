@@ -1,23 +1,36 @@
-# Imports
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+import torch.multiprocessing
+torch.multiprocessing.set_sharing_strategy('file_system')
+
 import os
 import numpy as np
 import torch
-import argparse
 import torch.nn.parallel
 import torch.distributed as dist
 import torch.multiprocessing as mp
 import torch.utils.data.distributed
 from monai.inferers import sliding_window_inference
-from monai.metrics import DiceMetric, hausdorff_distance,HausdorffDistanceMetric,SurfaceDiceMetric
-from monai.losses import DiceCELoss
-from trainer import test_organ
-from utils.data_utils import get_loader
-from functools import partial
-from monai.transforms import AsDiscrete,Activations,Compose,KeepLargestConnectedComponent,RemoveSmallObjects
+from monai.losses import DiceLoss, DiceCELoss
+from monai.metrics import DiceMetric
 from monai.utils.enums import MetricReduction
+from monai.transforms import AsDiscrete,Activations,Compose
+
+from utils.data_utils import get_loader
+from trainer import run_training
+from optimizers.lr_scheduler import LinearWarmupCosineAnnealingLR
+from functools import partial
+import argparse
+
 from models.Trans import CONFIGS as CONFIGS_TM
-import time
+
 import models.Trans as Trans
+
+import time
+from monai.metrics import hausdorff_distance, HausdorffDistanceMetric, SurfaceDiceMetric
+from trainer import test_organ
+from monai.transforms import KeepLargestConnectedComponent,RemoveSmallObjects
 
 # Arguments
 parser = argparse.ArgumentParser(description='SMIT+Swin-UNETR segmentation testing pipeline')
