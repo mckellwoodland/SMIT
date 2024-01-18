@@ -138,6 +138,43 @@ def train_epoch(model,
     for param in model.parameters() : param.grad = None
     return run_loss.avg
 
+def test_organ(model, loader,args,model_inferer=None,post_pred=None):
+    filename_csv = []
+    model.eval()
+    datalist = loader.dataset.data
+    output_dirpath = os.path.join(args.logdir, 'outputs')
+    if not os.path.exists(output_dirpath):
+        os.makedirs(output_dirpath)
+    with torch.no_grad():
+        for idx, batch_data in enumerate(loader):
+            filename = datalist[idx]['image'].split(os.sep)[-1][:-7]
+            filename_csv.append({'filename': filename})
+            if isinstance(batch_data,list):
+                data = batch_data
+            else:
+                data = batch_data['image']
+            data = data.cuda(args.rank)
+            with autocast(enabled=args.amp):
+                if model_inferer is not None:
+                    logits,_ = model_inferer(data)
+                else:
+                    logits,_ = model(data)
+            val_inputs_list = decollate_batch(data)
+            val_outputs_list = decollate_batch(logits)
+            val_output_convert = [post_pred(val_pred_tensor) for val_pred_tensor in val_outputs_list]
+
+            for input,output in zip(val_inputs_list,val_output_convert):
+                torch.save(monai.utils.convert_to_tensor(input[0], device=torch.device('cpu')),
+                           os.path.join(output_dirpath, f'{filename}_input.pt'))
+                torch.save(monai.utils.convert_to_tensor(output[1], device=torch.device('cpu')),
+                           os.path.join(output_dirpath, f'{filename}_output.pt'))
+    with open(os.path.join(output_dirpath,'filenames.csv'),'w') as f:
+        writer = csv.DictWriter(f, fieldnames=['filename'])
+        writer.writeheader()
+        writer.writerows(filename_csv)
+    f.close()
+    return
+
 def validation(epoch_iterator_val):
     model.eval()
     dice_vals = list()
